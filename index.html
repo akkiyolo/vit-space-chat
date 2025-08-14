@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIT Bhopal Space Connect - Random Video Chat</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --cosmic-purple: #6B46C1;
+            --cosmic-blue: #1E40AF;
+            --cosmic-pink: #EC4899;
+            --cosmic-cyan: #06B6D4;
+            --space-dark: #0F0F23;
+            --space-darker: #0A0A1A;
+            --nebula-purple: rgba(107, 70, 193, 0.3);
+            --nebula-blue: rgba(30, 64, 175, 0.3);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--space-darker) 0%, var(--space-dark) 50%, #1a1a2e 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .cosmic-font {
+            font-family: 'Orbitron', monospace;
+        }
+
+        .space-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 20% 80%, var(--nebula-purple) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, var(--nebula-blue) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(236, 72, 153, 0.2) 0%, transparent 50%);
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(2px 2px at 20px 30px, white, transparent),
+                radial-gradient(2px 2px at 40px 70px, white, transparent),
+                radial-gradient(1px 1px at 90px 40px, white, transparent),
+                radial-gradient(1px 1px at 130px 80px, white, transparent),
+                radial-gradient(2px 2px at 160px 30px, white, transparent);
+            background-repeat: repeat;
+            background-size: 200px 100px;
+            animation: sparkle 20s linear infinite;
+        }
+
+        @keyframes sparkle {
+            0% { transform: translateX(0px); }
+            100% { transform: translateX(-200px); }
+        }
+
+        .cosmic-glow {
+            box-shadow: 0 0 20px rgba(107, 70, 193, 0.5), 0 0 40px rgba(107, 70, 193, 0.3);
+        }
+
+        .neon-border {
+            border: 2px solid transparent;
+            background: linear-gradient(var(--space-dark), var(--space-dark)) padding-box,
+                        linear-gradient(45deg, var(--cosmic-purple), var(--cosmic-cyan)) border-box;
+        }
+
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .pulse-glow {
+            animation: pulseGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            from { box-shadow: 0 0 20px rgba(107, 70, 193, 0.5); }
+            to { box-shadow: 0 0 30px rgba(107, 70, 193, 0.8), 0 0 40px rgba(236, 72, 153, 0.4); }
+        }
+
+        .video-container {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .chat-bubble-user {
+            background: linear-gradient(135deg, var(--cosmic-purple), var(--cosmic-blue));
+            border-radius: 18px 18px 4px 18px;
+        }
+
+        .chat-bubble-other {
+            background: linear-gradient(135deg, #374151, #4B5563);
+            border-radius: 18px 18px 18px 4px;
+        }
+
+        .cosmic-button {
+            background: linear-gradient(135deg, var(--cosmic-purple), var(--cosmic-pink));
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cosmic-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .cosmic-button:hover::before {
+            left: 100%;
+        }
+
+        .cosmic-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(107, 70, 193, 0.4);
+        }
+
+        .loading-spinner {
+            border: 3px solid rgba(107, 70, 193, 0.3);
+            border-top: 3px solid var(--cosmic-purple);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, #059669, #10B981);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #DC2626, #EF4444);
+        }
+
+        .notification.info {
+            background: linear-gradient(135deg, var(--cosmic-blue), var(--cosmic-cyan));
+        }
+
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, var(--space-dark), var(--space-darker));
+            border: 1px solid rgba(107, 70, 193, 0.3);
+        }
+
+        .connection-status {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-connected {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+            border: 1px solid #10B981;
+        }
+
+        .status-connecting {
+            background: rgba(251, 191, 36, 0.2);
+            color: #F59E0B;
+            border: 1px solid #F59E0B;
+        }
+
+        .status-disconnected {
+            background: rgba(239, 68, 68, 0.2);
+            color: #EF4444;
+            border: 1px solid #EF4444;
+        }
+
+        @media (max-width: 768px) {
+            .video-container {
+                height: 250px;
+            }
+            
+            .chat-container {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="space-background"></div>
+    <div class="stars"></div>
+
+    <!-- Notification System -->
+    <div id="notification" class="notification"></div>
+
+    <!-- Landing Page -->
+    <div id="landingPage" class="min-h-screen flex items-center justify-center p-4">
+        <div class="max-w-md w-full">
+            <div class="text-center mb-8 floating">
+                <div class="inline-block p-4 rounded-full cosmic-glow mb-4">
+                    <i class="fas fa-rocket text-6xl text-purple-400"></i>
+                </div>
+                <h1 class="text-4xl font-bold cosmic-font text-white mb-2">VIT Bhopal</h1>
+                <h2 class="text-2xl font-semibold text-purple-300 mb-4">Space Connect</h2>
+                <p class="text-gray-300 text-lg">Connect with fellow Vitians across the cosmos</p>
+            </div>
+
+            <div class="neon-border rounded-2xl p-6 backdrop-blur-lg bg-opacity-20 bg-gray-900">
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">
+                        <i class="fas fa-envelope mr-2"></i>VIT Bhopal Email
+                    </label>
+                    <input 
+                        type="email" 
+                        id="emailInput"
+                        placeholder="your.name@vitbhopal.ac.in"
+                        class="w-full px-4 py-3 bg-gray-800 bg-opacity-50 border border-purple-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    >
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">
+                        <i class="fas fa-user mr-2"></i>Your Name
+                    </label>
+                    <input 
+                        type="text" 
+                        id="nameInput"
+                        placeholder="Enter your name"
+                        class="w-full px-4 py-3 bg-gray-800 bg-opacity-50 border border-purple-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    >
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Branch</label>
+                        <select id="branchSelect" class="w-full px-4 py-3 bg-gray-800 bg-opacity-50 border border-purple-500 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option value="">Any Branch</option>
+                            <option value="CSE">Computer Science</option>
+                            <option value="ECE">Electronics & Communication</option>
+                            <option value="MECH">Mechanical</option>
+                            <option value="CIVIL">Civil</option>
+                            <option value="EEE">Electrical</option>
+                            <option value="BIOTECH">Biotechnology</option>
+                            <option value="CHEM">Chemical</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Year</label>
+                        <select id="yearSelect" class="w-full px-4 py-3 bg-gray-800 bg-opacity-50 border border-purple-500 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option value="">Any Year</option>
+                            <option value="1">1st Year</option>
+                            <option value="2">2nd Year</option>
+                            <option value="3">3rd Year</option>
+                            <option value="4">4th Year</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button onclick="enterChat()" class="w-full py-4 cosmic-button text-white font-semibold rounded-lg text-lg">
+                    <i class="fas fa-rocket mr-2"></i>Launch into Space
+                </button>
+
+                <div class="mt-4 text-center">
+                    <a href="#" onclick="showAdminPanel()" class="text-purple-400 hover:text-purple-300 text-sm">
+                        <i class="fas fa-cog mr-1"></i>Admin Panel
+                    </a>
+                </div>
+            </div>
+
+            <div class="mt-6 text-center text-gray-400 text-sm">
+                <p>Only @vitbhopal.ac.in emails are allowed</p>
+                <p class="mt-2">
+                    <i class="fas fa-shield-alt mr-1"></i>Safe • 
+                    <i class="fas fa-lock mr-1"></i>Secure • 
+                    <i class="fas fa-users mr-1"></i>Community Guidelines
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Interface -->
+    <div id="chatInterface" class="hidden min-h-screen p-4">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-6 bg-gray-900 bg-opacity-50 backdrop-blur-lg rounded-xl p-4">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-rocket text-purple-400 text-xl"></i>
+                        <span class="cosmic-font text-white font-bold text-lg">Space Connect</span>
+                    </div>
+                    <div id="connectionStatus" class="connection-status status-disconnected">
+                        <i class="fas fa-circle mr-1"></i>Disconnected
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-3">
+                    <div class="text-right">
+                        <div id="userInfo" class="text-white font-medium"></div>
+                        <div id="matchInfo" class="text-purple-300 text-sm"></div>
+                    </div>
+                    <button onclick="showSettings()" class="p-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-white">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <button onclick="exitChat()" class="p-2 bg-red-600 hover:bg-red-700 rounded-lg text-white">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Chat Area -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Video Section -->
+                <div class="lg:col-span-2">
+                    <div class="space-y-4">
+                        <!-- Remote Video -->
+                        <div class="video-container relative bg-gray-900 h-80 lg:h-96">
+                            <video id="remoteVideo" class="w-full h-full object-cover" autoplay playsinline></video>
+                            <div class="absolute inset-0 flex items-center justify-center" id="waitingMessage">
+                                <div class="text-center">
+                                    <div class="loading-spinner mx-auto mb-4"></div>
+                                    <h3 class="text-white text-xl font-semibold mb-2">Searching across the cosmos...</h3>
+                                    <p class="text-gray-300">Finding your perfect study partner</p>
+                                </div>
+                            </div>
+                            <div class="absolute bottom-4 right-4 flex space-x-2">
+                                <button id="reportBtn" onclick="reportUser()" class="p-2 bg-red-600 bg-opacity-70 hover:bg-opacity-90 rounded-full text-white">
+                                    <i class="fas fa-flag"></i>
+                                </button>
+                                <button id="blockBtn" onclick="blockUser()" class="p-2 bg-orange-600 bg-opacity-70 hover:bg-opacity-90 rounded-full text-white">
+                                    <i class="fas fa-ban"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Local Video -->
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="video-container bg-gray-900 h-32">
+                                <video id="localVideo" class="w-full h-full object-cover" autoplay muted playsinline></video>
+                            </div>
+                            
+                            <!-- Control Buttons -->
+                            <div class="col-span-2 flex items-center justify-center space-x-3">
+                                <button id="toggleVideoBtn" onclick="toggleVideo()" class="p-3 bg-blue-600 hover:bg-blue-700 rounded-full text-white">
+                                    <i class="fas fa-video"></i>
+                                </button>
+                                <button id="toggleAudioBtn" onclick="toggleAudio()" class="p-3 bg-green-600 hover:bg-green-700 rounded-full text-white">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                                <button onclick="shareScreen()" class="p-3 bg-purple-600 hover:bg-purple-700 rounded-full text-white">
+                                    <i class="fas fa-desktop"></i>
+                                </button>
+                                <button onclick="findNext()" class="p-4 cosmic-button text-white rounded-full">
+                                    <i class="fas fa-forward mr-2"></i>Next
+                                </button>
+                                <button onclick="endChat()" class="p-4 bg-red-600 hover:bg-red-700 text-white rounded-full">
+                                    <i class="fas fa-times mr-2"></i>End
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Sidebar -->
+                <div class="space-y-4">
+                    <!-- Text Chat -->
+                    <div class="neon-border rounded-xl p-4 bg-gray-900 bg-opacity-50 backdrop-blur-lg">
+                        <h3 class="text-white font-semibold mb-4 flex items-center">
+                            <i class="fas fa-comments mr-2 text-purple-400"></i>Chat
+                        </h3>
+                        <div id="chatMessages" class="h-64 overflow-y-auto space-y-2 mb-4 p-2 bg-gray-800 bg-opacity-30 rounded-lg">
+                            <!-- Chat messages will appear here -->
+                        </div>
+                        <div class="flex space-x-2">
+                            <input 
+                                type="text" 
+                                id="messageInput"
+                                placeholder="Type a message..."
+                                class="flex-1 px-3 py-2 bg-gray-800 border border-purple-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                onkeypress="handleMessageKeyPress(event)"
+                            >
+                            <button onclick="sendMessage()" class="px-4 py-2 cosmic-button text-white rounded-lg">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Icebreakers -->
+                    <div class="neon-border rounded-xl p-4 bg-gray-900 bg-opacity-50 backdrop-blur-lg">
+                        <h3 class="text-white font-semibold mb-4 flex items-center">
+                            <i class="fas fa-lightbulb mr-2 text-yellow-400"></i>VIT Icebreakers
+                        </h3>
+                        <div class="space-y-2" id="icebreakers">
+                            <button onclick="sendIcebreaker(this)" class="w-full text-left p-2 bg-purple-600 bg-opacity-30 hover:bg-opacity-50 rounded-lg text-white text-sm">
+                                What's your favorite spot on campus?
+                            </button>
+                            <button onclick="sendIcebreaker(this)" class="w-full text-left p-2 bg-purple-600 bg-opacity-30 hover:bg-opacity-50 rounded-lg text-white text-sm">
+                                Which professor has impacted you the most?
+                            </button>
+                            <button onclick="sendIcebreaker(this)" class="w-full text-left p-2 bg-purple-600 bg-opacity-30 hover:bg-opacity-50 rounded-lg text-white text-sm">
+                                Any exciting placement updates?
+                            </button>
+                            <button onclick="sendIcebreaker(this)" class="w-full text-left p-2 bg-purple-600 bg-opacity-30 hover:bg-opacity-50 rounded-lg text-white text-sm">
+                                Favorite event from this semester?
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Online Users -->
+                    <div class="neon-border rounded-xl p-4 bg-gray-900 bg-opacity-50 backdrop-blur-lg">
+                        <h3 class="text-white font-semibold mb-4 flex items-center">
+                            <i class="fas fa-users mr-2 text-green-400"></i>Online Vitians
+                        </h3>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-green-400" id="onlineCount">42</div>
+                            <div class="text-gray-300 text-sm">Students Online</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel Modal -->
+    <div id="adminModal" class="hidden fixed inset-0 modal-overlay flex items-center justify-center p-4 z-50">
+        <div class="modal-content rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-white cosmic-font">
+                    <i class="fas fa-shield-alt mr-2 text-purple-400"></i>Admin Dashboard
+                </h2>
+                <button onclick="closeAdminPanel()" class="p-2 hover:bg-gray-700 rounded-lg text-gray-400">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="bg-purple-600 bg-opacity-20 p-4 rounded-lg">
+                    <div class="text-purple-400 text-sm font-medium">Active Users</div>
+                    <div class="text-2xl font-bold text-white">127</div>
+                </div>
+                <div class="bg-blue-600 bg-opacity-20 p-4 rounded-lg">
+                    <div class="text-blue-400 text-sm font-medium">Total Sessions</div>
+                    <div class="text-2xl font-bold text-white">1,543</div>
+                </div>
+                <div class="bg-green-600 bg-opacity-20 p-4 rounded-lg">
+                    <div class="text-green-400 text-sm font-medium">Avg Duration</div>
+                    <div class="text-2xl font-bold text-white">8m 32s</div>
+                </div>
+                <div class="bg-red-600 bg-opacity-20 p-4 rounded-lg">
+                    <div class="text-red-400 text-sm font-medium">Reports Today</div>
+                    <div class="text-2xl font-bold text-white">3</div>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-lg font-semibold text-white mb-4">Recent Reports</h3>
+                    <div class="space-y-2">
+                        <div class="bg-gray-800 p-4 rounded-lg flex items-center justify-between">
+                            <div>
+                                <div class="text-white font-medium">Inappropriate behavior</div>
+                                <div class="text-gray-400 text-sm">Reported by: anonymous@vitbhopal.ac.in</div>
+                                <div class="text-gray-500 text-xs">2 minutes ago</div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm">Action</button>
+                                <button class="px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm">Dismiss</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-semibold text-white mb-4">System Controls</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button class="p-4 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-left">
+                            <i class="fas fa-broadcast-tower mr-2"></i>
+                            <div class="font-medium">Send Announcement</div>
+                            <div class="text-sm opacity-75">Broadcast to all users</div>
+                        </button>
+                        <button class="p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-left">
+                            <i class="fas fa-chart-bar mr-2"></i>
+                            <div class="font-medium">View Analytics</div>
+                            <div class="text-sm opacity-75">Detailed usage stats</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="hidden fixed inset-0 modal-overlay flex items-center justify-center p-4 z-50">
+        <div class="modal-content rounded-2xl p-6 max-w-md w-full">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-white">Settings</h2>
+                <button onclick="closeSettings()" class="p-2 hover:bg-gray-700 rounded-lg text-gray-400">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-white">Video Quality</span>
+                    <select class="bg-gray-800 text-white rounded px-3 py-1">
+                        <option>High</option>
+                        <option>Medium</option>
+                        <option>Low</option>
+                    </select>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-white">Audio Quality</span>
+                    <select class="bg-gray-800 text-white rounded px-3 py-1">
+                        <option>High</option>
+                        <option>Medium</option>
+                        <option>Low</option>
+                    </select>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-white">Notifications</span>
+                    <button class="w-12 h-6 bg-purple-600 rounded-full relative">
+                        <div class="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global Variables
+        let localStream = null;
+        let remoteStream = null;
+        let peerConnection = null;
+        let currentUser = null;
+        let isVideoEnabled = true;
+        let isAudioEnabled = true;
+        let isConnected = false;
+        let chatMessages = [];
+
+        // Mock data for demonstration
+        const mockUsers = [
+            { name: "Arjun Kumar", branch: "CSE", year: "3", interests: ["Coding", "Gaming"] },
+            { name: "Priya Sharma", branch: "ECE", year: "2", interests: ["Music", "Photography"] },
+            { name: "Rohit Patel", branch: "MECH", year: "4", interests: ["Sports", "Movies"] },
+            { name: "Sneha Gupta", branch: "CSE", year: "1", interests: ["Reading", "Art"] }
+        ];
+
+        const icebreakerQuestions = [
+            "What's your favorite spot on campus?",
+            "Which professor has impacted you the most?",
+            "Any exciting placement updates?",
+            "Favorite event from this semester?",
+            "Best place to study on campus?",
+            "Most challenging subject this year?",
+            "Favorite campus food joint?",
+            "Plans after graduation?"
+        ];
+
+        // Utility Functions
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function validateVITEmail(email) {
+            return email.endsWith('@vitbhopal.ac.in');
+        }
+
+        function generateRandomId() {
+            return Math.random().toString(36).substr(2, 9);
+        }
+
+        function formatTime(timestamp) {
+            return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Authentication and Entry
+        function enterChat() {
+            const email = document.getElementById('emailInput').value.trim();
+            const name = document.getElementById('nameInput').value.trim();
+            const branch = document.getElementById('branchSelect').value;
+            const year = document.getElementById('yearSelect').value;
+
+            if (!email) {
+                showNotification('Please enter your VIT Bhopal email', 'error');
+                return;
+            }
+
+            if (!validateVITEmail(email)) {
+                showNotification('Please use your @vitbhopal.ac.in email address', 'error');
+                return;
+            }
+
+            if (!name) {
+                showNotification('Please enter your name', 'error');
+                return;
+            }
+
+            currentUser = {
+                email,
+                name,
+                branch: branch || 'Any',
+                year: year || 'Any',
+                id: generateRandomId()
+            };
+
+            // Store user data
+            localStorage.setItem('vitSpaceUser', JSON.stringify(currentUser));
+
+            // Show chat interface
+            document.getElementById('landingPage').classList.add('hidden');
+            document.getElementById('chatInterface').classList.remove('hidden');
+            document.getElementById('chatInterface').classList.add('fade-in');
+
+            // Update user info display
+            document.getElementById('userInfo').textContent = currentUser.name;
+            document.getElementById('matchInfo').textContent = `${currentUser.branch} • ${currentUser.year}${currentUser.year !== 'Any' ? getSuffix(currentUser.year) + ' Year' : ''}`;
+
+            // Initialize chat
+            initializeChat();
+            showNotification('Welcome to Space Connect!', 'success');
+        }
+
+        function getSuffix(num) {
+            const suffixes = { '1': 'st', '2': 'nd', '3': 'rd', '4': 'th' };
+            return suffixes[num] || 'th';
+        }
+
+        function exitChat() {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+            }
+            if (peerConnection) {
+                peerConnection.close();
+            }
+            
+            localStorage.removeItem('vitSpaceUser');
+            document.getElementById('chatInterface').classList.add('hidden');
+            document.getElementById('landingPage').classList.remove('hidden');
+            
+            // Reset form
+            document.getElementById('emailInput').value = '';
+            document.getElementById('nameInput').value = '';
+            document.getElementById('branchSelect').value = '';
+            document.getElementById('yearSelect').value = '';
+            
+            showNotification('Thanks for using Space Connect!', 'info');
+        }
+
+        // Chat Initialization
+        async function initializeChat() {
+            try {
+                // Get user media
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: 1280, height: 720 },
+                    audio: { echoCancellation: true, noiseSuppression: true }
+                });
+
+                document.getElementById('localVideo').srcObject = localStream;
+                updateConnectionStatus('connecting');
+                
+                // Simulate finding a match after 2-5 seconds
+                setTimeout(() => {
+                    simulateMatch();
+                }, Math.random() * 3000 + 2000);
+
+            } catch (error) {
+                console.error('Error accessing media devices:', error);
+                showNotification('Could not access camera/microphone', 'error');
+                updateConnectionStatus('disconnected');
+            }
+        }
+
+        function simulateMatch() {
+            // Pick a random mock user
+            const randomUser = mockUsers[Math.floor(Math.random() * mockUsers.length)];
+            
+            updateConnectionStatus('connected');
+            document.getElementById('waitingMessage').style.display = 'none';
+            
+            // Add system message
+            addChatMessage(`Connected with ${randomUser.name} (${randomUser.branch} • ${randomUser.year}${getSuffix(randomUser.year)} Year)`, 'system');
+            
+            // Simulate some chat activity
+            setTimeout(() => {
+                const greetings = [
+                    "Hey there! 👋",
+                    "Hi! How's your semester going?",
+                    "Hello! Nice to meet a fellow Vitian!",
+                    "Hey! What's your favorite thing about VIT Bhopal?"
+                ];
+                addChatMessage(greetings[Math.floor(Math.random() * greetings.length)], 'other', randomUser.name);
+            }, 1000);
+
+            isConnected = true;
+            showNotification(`Connected with ${randomUser.name}!`, 'success');
+        }
+
+        function updateConnectionStatus(status) {
+            const statusElement = document.getElementById('connectionStatus');
+            const statusMap = {
+                'connected': { class: 'status-connected', text: 'Connected', icon: 'fas fa-circle' },
+                'connecting': { class: 'status-connecting', text: 'Connecting', icon: 'fas fa-circle' },
+                'disconnected': { class: 'status-disconnected', text: 'Disconnected', icon: 'fas fa-circle' }
+            };
+
+            const config = statusMap[status];
+            statusElement.className = `connection-status ${config.class}`;
+            statusElement.innerHTML = `<i class="${config.icon} mr-1"></i>${config.text}`;
+        }
+
+        // Video Controls
+        function toggleVideo() {
+            if (localStream) {
+                isVideoEnabled = !isVideoEnabled;
+                localStream.getVideoTracks().forEach(track => {
+                    track.enabled = isVideoEnabled;
+                });
+
+                const btn = document.getElementById('toggleVideoBtn');
+                if (isVideoEnabled) {
+                    btn.innerHTML = '<i class="fas fa-video"></i>';
+                    btn.className = btn.className.replace('bg-red-600 hover:bg-red-700', 'bg-blue-600 hover:bg-blue-700');
+                } else {
+                    btn.innerHTML = '<i class="fas fa-video-slash"></i>';
+                    btn.className = btn.className.replace('bg-blue-600 hover:bg-blue-700', 'bg-red-600 hover:bg-red-700');
+                }
+            }
+        }
+
+        function toggleAudio() {
+            if (localStream) {
+                isAudioEnabled = !isAudioEnabled;
+                localStream.getAudioTracks().forEach(track => {
+                    track.enabled = isAudioEnabled;
+                });
+
+                const btn = document.getElementById('toggleAudioBtn');
+                if (isAudioEnabled) {
+                    btn.innerHTML = '<i class="fas fa-microphone"></i>';
+                    btn.className = btn.className.replace('bg-red-600 hover:bg-red-700', 'bg-green-600 hover:bg-green-700');
+                } else {
+                    btn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+                    btn.className = btn.className.replace('bg-green-600 hover:bg-green-700', 'bg-red-600 hover:bg-red-700');
+                }
+            }
+        }
+
+        async function shareScreen() {
+            try {
+                const screenStream = await navigator.mediaDevices.getDisplayMedia({
+                    video: { cursor: "always" },
+                    audio: false
+                });
+
+                // Replace video track
+                if (peerConnection) {
+                    const sender = peerConnection.getSenders().find(s => 
+                        s.track && s.track.kind === 'video'
+                    );
+                    if (sender) {
+                        sender.replaceTrack(screenStream.getVideoTracks()[0]);
+                    }
+                }
+
+                document.getElementById('localVideo').srcObject = screenStream;
+                showNotification('Screen sharing started', 'success');
+
+                // Handle screen share end
+                screenStream.getVideoTracks()[0].onended = () => {
+                    document.getElementById('localVideo').srcObject = localStream;
+                    showNotification('Screen sharing ended', 'info');
+                };
+
+            } catch (error) {
+                console.error('Error sharing screen:', error);
+                showNotification('Could not share screen', 'error');
+            }
+        }
+
+        function findNext() {
+            if (isConnected) {
+                // Simulate disconnection and new search
+                updateConnectionStatus('connecting');
+                document.getElementById('waitingMessage').style.display = 'flex';
+                document.getElementById('remoteVideo').srcObject = null;
+                
+                // Clear chat
+                document.getElementById('chatMessages').innerHTML = '';
+                chatMessages = [];
+                
+                isConnected = false;
+                showNotification('Finding your next cosmic connection...', 'info');
+                
+                // Find new match after delay
+                setTimeout(() => {
+                    simulateMatch();
+                }, Math.random() * 4000 + 2000);
+            }
+        }
+
+        function endChat() {
+            updateConnectionStatus('disconnected');
+            document.getElementById('waitingMessage').style.display = 'flex';
+            document.getElementById('waitingMessage').innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-hand-wave text-6xl text-purple-400 mb-4"></i>
+                    <h3 class="text-white text-xl font-semibold mb-2">Chat Ended</h3>
+                    <p class="text-gray-300">Click "Next" to find another Vitian!</p>
+                </div>
+            `;
+            document.getElementById('remoteVideo').srcObject = null;
+            isConnected = false;
+            addChatMessage('Chat ended', 'system');
+        }
+
+        // Chat Functions
+        function addChatMessage(message, type, sender = null) {
+            const chatContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            const timestamp = formatTime(Date.now());
+
+            if (type === 'system') {
+                messageDiv.innerHTML = `
+                    <div class="text-center text-purple-300 text-sm py-2">
+                        <i class="fas fa-info-circle mr-1"></i>${message}
+                    </div>
+                `;
+            } else {
+                const isUser = type === 'user';
+                const bubbleClass = isUser ? 'chat-bubble-user ml-8' : 'chat-bubble-other mr-8';
+                const alignClass = isUser ? 'justify-end' : 'justify-start';
+                
+                messageDiv.innerHTML = `
+                    <div class="flex ${alignClass} mb-2">
+                        <div class="${bubbleClass} px-4 py-2 max-w-xs">
+                            ${sender && !isUser ? `<div class="text-xs text-gray-300 mb-1">${sender}</div>` : ''}
+                            <div class="text-white">${message}</div>
+                            <div class="text-xs text-gray-300 mt-1">${timestamp}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            chatMessages.push({ message, type, sender, timestamp });
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (message && isConnected) {
+                addChatMessage(message, 'user');
+                input.value = '';
+                
+                // Simulate response after delay
+                setTimeout(() => {
+                    const responses = [
+                        "That's interesting!",
+                        "I totally agree!",
+                        "Tell me more about that",
+                        "That sounds awesome!",
+                        "Same here!",  
+                        "Really? That's cool!",
+                        "I've been thinking the same thing",
+                        "That's a great point!"
+                    ];
+                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                    addChatMessage(randomResponse, 'other', 'Study Partner');
+                }, Math.random() * 2000 + 1000);
+            }
+        }
+
+        function handleMessageKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function sendIcebreaker(element) {
+            const question = element.textContent;
+            document.getElementById('messageInput').value = question;
+            sendMessage();
+        }
+
+        // Safety Functions
+        function reportUser() {
+            if (isConnected) {
+                showNotification('User reported. Thank you for keeping our community safe.', 'success');
+                // Log report (in real app, this would go to backend)
+                console.log('User reported:', { reporter: currentUser.id, timestamp: Date.now() });
+            }
+        }
+
+        function blockUser() {
+            if (isConnected) {
+                showNotification('User blocked for this session', 'info');
+                findNext();
+            }
+        }
+
+        // Modal Functions
+        function showAdminPanel() {
+            document.getElementById('adminModal').classList.remove('hidden');
+        }
+
+        function closeAdminPanel() {
+            document.getElementById('adminModal').classList.add('hidden');
+        }
+
+        function showSettings() {
+            document.getElementById('settingsModal').classList.remove('hidden');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+
+        // Initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is already logged in
+            const savedUser = localStorage.getItem('vitSpaceUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                // Auto-enter chat if previously logged in
+                document.getElementById('landingPage').classList.add('hidden');
+                document.getElementById('chatInterface').classList.remove('hidden');
+                document.getElementById('userInfo').textContent = currentUser.name;
+                document.getElementById('matchInfo').textContent = `${currentUser.branch} • ${currentUser.year}${currentUser.year !== 'Any' ? getSuffix(currentUser.year) + ' Year' : ''}`;
+                initializeChat();
+                showNotification('Welcome back to Space Connect!', 'success');
+            }
+
+            // Update online count periodically
+            setInterval(() => {
+                const count = Math.floor(Math.random() * 20) + 35;
+                document.getElementById('onlineCount').textContent = count;
+            }, 10000);
+
+            // Add some demo icebreakers
+            const icebreakerContainer = document.getElementById('icebreakers');
+            const shuffledQuestions = icebreakerQuestions.sort(() => 0.5 - Math.random()).slice(0, 4);
+            
+            icebreakerContainer.innerHTML = '';
+            shuffledQuestions.forEach(question => {
+                const button = document.createElement('button');
+                button.onclick = function() { sendIcebreaker(this); };
+                button.className = 'w-full text-left p-2 bg-purple-600 bg-opacity-30 hover:bg-opacity-50 rounded-lg text-white text-sm transition-all duration-200';
+                button.textContent = question;
+                icebreakerContainer.appendChild(button);
+            });
+        });
+
+        // Handle page visibility change
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden && isConnected) {
+                // Pause video when tab is not visible
+                if (localStream) {
+                    localStream.getVideoTracks().forEach(track => {
+                        track.enabled = false;
+                    });
+                }
+            } else if (!document.hidden && isConnected) {
+                // Resume video when tab becomes visible
+                if (localStream && isVideoEnabled) {
+                    localStream.getVideoTracks().forEach(track => {
+                        track.enabled = true;
+                    });
+                }
+            }
+        });
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey || event.metaKey) {
+                switch(event.key) {
+                    case 'm':
+                        event.preventDefault();
+                        toggleAudio();
+                        break;
+                    case 'e':
+                        event.preventDefault();
+                        toggleVideo();
+                        break;
+                    case 'n':
+                        event.preventDefault();
+                        if (isConnected) findNext();
+                        break;
+                }
+            }
+            
+            if (event.key === 'Escape') {
+                closeAdminPanel();
+                closeSettings();
+            }
+        });
+    </script>
+</body>
+</html>
